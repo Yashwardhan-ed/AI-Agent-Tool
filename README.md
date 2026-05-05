@@ -6,17 +6,7 @@ A **conversational CLI agent** that takes natural language instructions and auto
 
 [![Watch the Demo](https://img.shields.io/badge/YouTube-Demo_Video-red?style=for-the-badge&logo=youtube)](https://youtu.be/tDlrk3NMPAY)
 
-## ✨ Features
-
-- **Natural Language Interface** — Describe what you want in plain English via the terminal
-- **Multi-Step Reasoning** — The agent follows a structured `START → THINK → TOOL → OBSERVE → OUTPUT` loop, breaking complex tasks into manageable steps
-- **Autonomous File Generation** — Writes complete HTML, CSS, and JS files with real content (no placeholders)
-- **Chunked File Writing** — Uses `writeProjectFile` + `appendProjectFile` to build files incrementally, avoiding token-limit issues
-- **Web Fetching** — Can fetch and parse live web pages via `fetchWebPage` for reference
-- **Built-in Retry Logic** — Handles API rate limits with automatic backoff and retries
-- **Thinking Log** — Records the agent's reasoning steps to `.agent_thinking.md` for transparency
-
-## 🏗️ Architecture
+## Architecture
 
 ```
 User Instruction
@@ -122,7 +112,7 @@ User Instruction
    xdg-open scaler_clone/index.html
    ```
 
-### Optional Configuration
+### Configuration
 
 You can override the default model and token limits via environment variables:
 
@@ -132,7 +122,7 @@ You can override the default model and token limits via environment variables:
 | `OPENROUTER_MODEL` | `mistralai/mistral-large-2512` | Model to use ([browse models](https://openrouter.ai/models)) |
 | `OPENROUTER_MAX_TOKENS` | `4096` | Max tokens per LLM response |
 
-## 📦 Dependencies
+## Dependencies
 
 | Package | Purpose |
 |---------|---------|
@@ -141,7 +131,7 @@ You can override the default model and token limits via environment variables:
 | `axios` | HTTP requests (web fetching, weather API) |
 | `cheerio` | HTML parsing for `fetchWebPage` tool |
 
-## 🎯 What the Agent Generates
+## What the Agent Generates
 
 When instructed to clone the Scaler landing page, the agent produces:
 
@@ -150,7 +140,3 @@ When instructed to clone the Scaler landing page, the agent produces:
 - **Footer** — Dark background with copyright text
 
 All styled with Scaler's brand colors (`#1A73E8` blue, `#0B1B3A` dark navy) and clean, responsive CSS.
-
-## 📝 License
-
-ISC
