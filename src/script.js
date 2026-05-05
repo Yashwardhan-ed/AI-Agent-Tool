@@ -7,7 +7,7 @@ import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { Mistral } from "@mistralai/mistralai";
+import { OpenAI } from "openai";
 
 const execAsync = promisify(exec);
 const DEFAULT_CHUNK_SIZE = 12000;
@@ -16,8 +16,9 @@ const OBSERVE_CONTEXT_LIMIT = 3500;
 const THINKING_FILE_PATH = ".agent_thinking.md";
 const THINKING_NOTE_CHAR_LIMIT = 1600;
 const OBSERVE_DUMP_DIR = ".agent_observations";
-const client = new Mistral({
-  apiKey: process.env.MISTRAL_API_KEY
+const client = new OpenAI({
+  apiKey: process.env.OPEN_ROUTER_API_KEY,
+  baseURL: "https://openrouter.ai/api/v1"
 });
 
 async function getTheWeatherOfCity(cityname = "") {
@@ -344,8 +345,8 @@ async function buildObservationForContext(toolName, data, stepNumber) {
 }
 
 async function runAgentLoop(userInstruction) {
-  const model = process.env.MISTRAL_MODEL || "mistral-large-latest";
-  const configuredMaxTokens = Number(process.env.MISTRAL_MAX_TOKENS ?? DEFAULT_MAX_TOKENS);
+  const model = process.env.OPENROUTER_MODEL || "mistralai/mistral-large-2512";
+  const configuredMaxTokens = Number(process.env.OPENROUTER_MAX_TOKENS ?? DEFAULT_MAX_TOKENS);
   const maxTokens = Number.isFinite(configuredMaxTokens) && configuredMaxTokens > 0
     ? Math.floor(configuredMaxTokens)
     : DEFAULT_MAX_TOKENS;
@@ -374,17 +375,17 @@ async function runAgentLoop(userInstruction) {
     const maxRetries = 3;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        response = await client.chat.complete({
+        response = await client.chat.completions.create({
           model,
           messages,
           temperature: 0.2,
-          maxTokens: maxTokens,
-          responseFormat: { type: "json_object" }
+          max_tokens: maxTokens,
+          response_format: { type: "json_object" }
         });
         break; // success — exit retry loop
       } catch (error) {
         const message = error?.message || "Unknown API error.";
-        const statusCode = error?.statusCode || error?.status;
+        const statusCode = error?.status || error?.statusCode;
         if (statusCode === 429 || message.includes("429") || message.includes("rate limit")) {
           const waitMatch = message.match(/(\d+(\.\d+)?)s/);
           const waitSec = waitMatch ? Math.min(parseFloat(waitMatch[1]), 60) : (attempt * 15);
@@ -392,14 +393,14 @@ async function runAgentLoop(userInstruction) {
           await new Promise(r => setTimeout(r, waitSec * 1000));
           if (attempt === maxRetries) {
             throw new Error(
-              `Rate limit reached after ${maxRetries} retries. Try again later or switch model via MISTRAL_MODEL env var.`
+              `Rate limit reached after ${maxRetries} retries. Try again later or switch model via OPENROUTER_MODEL env var.`
             );
           }
           continue;
         }
         if (message.includes("requires more credits") || message.includes("fewer max_tokens")) {
           throw new Error(
-            `Mistral credits/token limit reached. Lower MISTRAL_MAX_TOKENS (current: ${maxTokens}) or add credits.`
+            `Credits/token limit reached. Lower OPENROUTER_MAX_TOKENS (current: ${maxTokens}) or add credits.`
           );
         }
         // Log full error details for debugging
@@ -496,8 +497,8 @@ async function runAgentLoop(userInstruction) {
 }
 
 async function main() {
-  if (!process.env.MISTRAL_API_KEY) {
-    console.error("Missing MISTRAL_API_KEY. Add it to your .env file.");
+  if (!process.env.OPEN_ROUTER_API_KEY) {
+    console.error("Missing OPEN_ROUTER_API_KEY. Add it to your .env file.");
     process.exit(1);
   }
 

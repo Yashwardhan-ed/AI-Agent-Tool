@@ -1,6 +1,7 @@
-// Basic interactivity for Scaler clone
-console.log("Scaler clone loaded");
+// Scaler.com Clone - JavaScript
+// Basic interactivity for the clone
 
-// Mobile menu toggle (if needed in future)
-// Add smooth scrolling for anchor links
-// Add any additional interactive elements here
+document.addEventListener('DOMContentLoaded', function() {
+    // Add any interactive functionality here if needed
+    console.log('Scaler clone loaded successfully');
+});
